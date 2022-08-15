@@ -16,7 +16,10 @@ use League\ColorExtractor\ColorExtractor;
 use League\ColorExtractor\Palette;
 use Illuminate\Support\Facades\Validator;
 use Image;
-use FFMpeg;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use ProtoneMedia\LaravelFFMpeg\Filters\WatermarkFactory;
+
+//use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 //use FFMpeg\Coordinate\Dimension;
 trait UploadTrait
@@ -71,7 +74,7 @@ trait UploadTrait
 
         $sizeAllowed = $this->settings->file_size_allowed * 1024;
 
-        $dimensions = explode('x', $this->settings->min_width_height_image);
+        $dimensions = Helper::resolutionVideo($this->settings->min_width_height_video);
 
         if ($this->settings->currency_position == 'right') {
             $currencyPosition = 2;
@@ -80,7 +83,7 @@ trait UploadTrait
         }
 
         $messages = [
-            'photo.required'    => trans('misc.please_select_image'),
+            'photo.required'    => trans('misc.please_select_video'),
             "photo.max"         => trans('misc.max_size') . ' ' . Helper::formatBytes($sizeAllowed, 1),
             "price.required_if" => trans('misc.price_required'),
             'price.min'         => trans('misc.price_minimum_sale' . $currencyPosition, ['symbol' => $this->settings->currency_symbol, 'code' => $this->settings->currency_code]),
@@ -93,6 +96,7 @@ trait UploadTrait
             'description' => 'min:2|max:' . $this->settings->description_length . '',
             'tags'        => 'required',
             'price'       => 'required_if:item_for_sale,==,sale|integer|min:' . $this->settings->min_sale_amount . '|max:' . $this->settings->max_sale_amount . '',
+//            'video'       => 'required|mimes:mp4,m4v,mkv,gif,avi,mov|dimensions:min_width=' . $dimensions['w'] . ',min_height=' . $dimensions['h'] . '|max:' . $this->settings->video_file_size_allowed . '',
         ], $messages);
     }
 
@@ -390,6 +394,7 @@ trait UploadTrait
             $sql->vector = $vectorFile;
             $sql->data_iptc = $_dataIPTC ?? false;
             $sql->date_time_original = $dateTimeOriginal;
+            $sql->type = 'image';
             $sql->save();
 
             // ID INSERT
@@ -455,6 +460,25 @@ trait UploadTrait
 
     protected function uploadVideo()
     {
+        $size = [
+            'hd'  => [
+                "w" => "1280",
+                "h" => "720",
+            ],
+            'fhd' => [
+                "w" => "1920",
+                "h" => "1080",
+            ],
+            'qhd' => [
+                "w" => "2560",
+                "h" => "1440",
+            ],
+            'uhd' => [
+                "w" => "3840",
+                "h" => "2160",
+            ],
+        ];
+
         try {
 
             if ($this->settings->who_can_upload == 'admin' && !auth()->user()->isSuperAdmin()) {
@@ -464,11 +488,13 @@ trait UploadTrait
                 ]);
             }
 
-            $pathFiles = config('path.files');
             $pathHd = config('path.hd');
             $pathFhd = config('path.fhd');
-            $pathQhd = config('path.qud');
+            $pathQhd = config('path.qhd');
             $pathUhd = config('path.uhd');
+            $pathVideoPreview = config('path.video_preview');
+            $pathThumbnail = config('path.video_thumbnail');
+            $pathVideoOverview = config('path.video_overview');
 
             $input = $this->request->all();
 
@@ -518,33 +544,124 @@ trait UploadTrait
                 ]);
             }
 
-            $ffmpeg = FFMpeg\FFMpeg::create([
-                'ffmpeg.binaries'  => 'C:/ffmpeg/bin/ffmpeg.exe',
-                'ffprobe.binaries' => 'C:/ffmpeg/bin/ffprobe.exe',
-            ]);
-            $video = $ffmpeg->open($this->request->file('video'));
+            $extension = $this->request->file('video')->extension();
+            $name = strtolower(auth()->id() . time() . str_random(100) . '.' . $extension);
 
-            $video
-                ->filters()
-                ->resize(new FFMpeg\Coordinate\Dimension(200, 120))
-                ->synchronize();
-
-//            $video
-//                ->filters()
-//                ->watermark(public_path('img/logo.png'), [
-//                    'position' => 'absolute',
-//                    'x'        => 640,
-//                    'y'        => 360,
-//                ]);
-
-//            $video
-//                ->save(new FFMpeg\Format\Video\X264(), 'aaaaa.mp4');
-
-//            $path = $pathFhd;
-//            Storage::putFileAs($path, $video->get, 'test13.mp4');
+            $preview = strtolower(str_slug($input['title'], '-') . '-' . auth()->id() . time() . str_random(10) . '.' . $extension);
+            $thumbnail = strtolower(str_slug($input['title'], '-') . '-' . auth()->id() . time() . str_random(10) . '.' . 'png');
 
 
-            dd($video);
+            $width = FFMpeg::open($this->request->file('video'))->getVideoStream()->getDimensions()->getWidth();
+            $height = FFMpeg::open($this->request->file('video'))->getVideoStream()->getDimensions()->getHeight();
+
+            $dim = $width / $height;
+
+            //            thumbnail
+            FFMpeg::open($this->request->file('video'))
+                ->getFrameFromSeconds(0)
+                ->export()
+                ->toDisk('sftp')
+                ->save($pathThumbnail . $thumbnail);
+
+            if ($width >= $size['uhd']['w']) {
+                //            4k
+                FFMpeg::open($this->request->file('video'))
+                    ->export()
+                    ->toDisk('sftp')
+                    ->inFormat(new \FFMpeg\Format\Video\X264)
+                    ->resize($size["uhd"]["w"], $size["uhd"]["w"] / $dim)
+                    ->save($pathUhd . $name);
+
+                $stockImages[] = ['name' => $name, 'type' => 'uhd', 'resolution' => "4k"];
+            }
+
+            if ($width >= $size['qhd']['w']) {
+
+                //            2k
+                FFMpeg::open($this->request->file('video'))
+                    ->export()
+                    ->toDisk('sftp')
+                    ->inFormat(new \FFMpeg\Format\Video\X264)
+                    ->resize($size["qhd"]["w"], $size["qhd"]["w"] / $dim)
+                    ->save($pathQhd . $name);
+                $stockImages[] = ['name' => $name, 'type' => 'qhd', 'resolution' => "2k"];
+            }
+
+            if ($width >= $size['fhd']['w']) {
+
+                //            1080
+                FFMpeg::open($this->request->file('video'))
+                    ->export()
+                    ->toDisk('sftp')
+                    ->inFormat(new \FFMpeg\Format\Video\X264)
+                    ->resize($size["fhd"]["w"], $size["fhd"]["w"] / $dim)
+                    ->save($pathFhd . $name);
+                $stockImages[] = ['name' => $name, 'type' => 'fhd', 'resolution' => "1080p"];
+            }
+
+            //            720
+            FFMpeg::open($this->request->file('video'))
+                ->export()
+                ->toDisk('sftp')
+                ->inFormat(new \FFMpeg\Format\Video\X264)
+                ->resize($size["hd"]["w"], $size["hd"]["w"] / $dim)
+                ->save($pathHd . $name);
+            $stockImages[] = ['name' => $name, 'type' => 'hd', 'resolution' => "720p"];
+
+            $duration = FFMpeg::open($this->request->file('video'))->getDurationInSeconds();
+
+            //            preview
+            FFMpeg::open($this->request->file('video'))
+                ->addWatermark(function (WatermarkFactory $watermark) {
+                    $watermark->fromDisk('default')
+                        ->open('img/watermark.png')
+                        ->horizontalAlignment(WatermarkFactory::CENTER, 0)
+                        ->verticalAlignment(WatermarkFactory::CENTER, 0);
+                })
+                ->export()
+                ->toDisk('sftp')
+                ->inFormat(new \FFMpeg\Format\Video\X264)
+                ->resize(config('video.preview_width') * 2, config('video.preview_width') * 2 / $dim)
+                ->save($pathVideoPreview . $preview);
+
+            //            overview
+
+
+            $start = \FFMpeg\Coordinate\TimeCode::fromSeconds(0);
+            $end = \FFMpeg\Coordinate\TimeCode::fromSeconds(min([$duration, 5]));
+            $clipFilter = new \FFMpeg\Filters\Video\ClipFilter($start, $end);
+            FFMpeg::open($this->request->file('video'))
+                ->addFilter($clipFilter)
+                ->addWatermark(function (WatermarkFactory $watermark) {
+                    $watermark->fromDisk('default')
+                        ->open('img/watermark.png')
+                        ->horizontalAlignment(WatermarkFactory::CENTER, 0)
+                        ->verticalAlignment(WatermarkFactory::CENTER, 0);
+                })
+                ->export()
+                ->toDisk('sftp')
+                ->inFormat(new \FFMpeg\Format\Video\X264)
+                ->resize(config('video.preview_width'), config('video.preview_width') / $dim)
+                ->save($pathVideoOverview . $preview);
+
+
+            $originalName = Helper::fileNameOriginal($this->request->file('video')->getClientOriginalName());
+
+
+            if (!empty($this->request->description)) {
+                $description = Helper::checkTextDb($this->request->description);
+            } else {
+                $description = '';
+            }
+
+
+            if ($this->settings->auto_approve_images == 'on') {
+                $status = 'active';
+            } else {
+                $status = 'pending';
+            }
+
+            $token_id = str_random(200);
 
             $sql = new Images();
             $sql->thumbnail = $thumbnail;
@@ -557,26 +674,36 @@ trait UploadTrait
             $sql->token_id = $token_id;
             $sql->tags = mb_strtolower($tags);
             $sql->extension = strtolower($extension);
-            $sql->colors = $colors_image;
-            $sql->exif = trim($exif);
-            $sql->camera = $camera;
             $sql->how_use_image = $this->request->how_use_image;
             $sql->attribution_required = $this->request->attribution_required ?? 'no';
             $sql->original_name = $originalName;
             $sql->price = $this->settings->default_price_photos ?: $price;
             $sql->item_for_sale = $this->request->item_for_sale ? $this->request->item_for_sale : 'free';
-            $sql->vector = $vectorFile;
-            $sql->data_iptc = $_dataIPTC ?? false;
-            $sql->date_time_original = $dateTimeOriginal;
+            $sql->type = 'video';
+            $sql->duration = $duration;
+            $sql->dim = $dim;
             $sql->save();
 
             // ID INSERT
             $imageID = $sql->id;
 
 
+            foreach ($stockImages as $key) {
+                $stock = new Stock;
+                $stock->images_id = $imageID;
+                $stock->name = $key['name'];
+                $stock->type = $key['type'];
+                $stock->extension = $extension;
+                $stock->resolution = $key['resolution'];
+//                $stock->size = $key['size'];
+                $stock->token = $token_id;
+                $stock->save();
+
+            }
+
             return response()->json([
                 'success' => true,
-                'target'  => url('photo', $imageID),
+                'target'  => url('video', $imageID),
             ]);
 
         } catch (\Exception $e) {

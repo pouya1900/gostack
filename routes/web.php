@@ -106,6 +106,7 @@ Route::get('search', 'HomeController@getSearch');
 
 // Photo Details
 Route::get('photo/{id}/{slug?}','ImagesController@show');
+Route::get('video/{id}/{slug?}','ImagesController@showVideo');
 
 // Logout
 Route::get('/logout', 'Auth\LoginController@logout');
@@ -184,6 +185,13 @@ Route::group(['middleware' => 'auth'], function() {
 
 	// Delete Photo 6
 	Route::post('delete/photo/{id}','ImagesController@destroy');
+
+    // Edit video
+    Route::get('edit/video/{id}','ImagesController@editVideo');
+    Route::post('update/video','ImagesController@updateVideo');
+
+    // Delete video 6
+    Route::post('delete/video/{id}','ImagesController@destroyVideo');
 
 	// Account Settings
 	Route::get('account','UserController@account');
@@ -546,6 +554,9 @@ Route::post('stripe/webhook', 'StripeWebHookController@handleWebhook');
 Route::get('user/dashboard/downloads','DashboardController@downloads')->middleware('auth');
 Route::get('files/preview/{size}/{path}', 'ImagesController@image')->where('path', '.*');
 Route::get('assets/preview/{path}.{ext}', 'ImagesController@preview');
+
+Route::get('files/video/preview/{size}/{path}', 'ImagesController@video')->where('path', '.*');
+
 
 Route::get('invoice/{id}','UserController@invoice');
 Route::get('my/referrals','UserController@myReferrals')->middleware('auth');

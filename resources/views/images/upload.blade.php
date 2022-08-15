@@ -9,7 +9,7 @@
 @section('content')
     <section class="section section-sm">
         <div class="container pt-5">
-            <div >
+            <div class="video_upload_link">
                 <a href="{{url('upload/video')}}">upload video</a>
             </div>
 

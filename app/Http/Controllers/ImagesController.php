@@ -30,6 +30,7 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use League\Glide\Responses\LaravelResponseFactory;
 use League\Glide\ServerFactory;
 use League\Glide\Signatures\SignatureFactory;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ImagesController extends Controller
 {
@@ -274,6 +275,171 @@ class ImagesController extends Controller
 
     }//<--- End Method
 
+    public function showVideo($id, $slug = null)
+    {
+        $response = Images::findOrFail($id);
+
+        if (auth()->check() && $response->user_id != auth()->id() && $response->status == 'pending' && auth()->user()->role != 'admin') {
+            abort(404);
+        } else if (auth()->guest() && $response->status == 'pending') {
+            abort(404);
+        }
+
+        $uri = $this->request->path();
+
+        if (str_slug($response->title) == '') {
+
+            $slugUrl = '';
+        } else {
+            $slugUrl = '/' . str_slug($response->title);
+        }
+
+        $url_image = 'video/' . $response->id . $slugUrl;
+
+        //<<<-- * Redirect the user real page * -->>>
+        $uriImage = $this->request->path();
+        $uriCanonical = $url_image;
+
+        if ($uriImage != $uriCanonical) {
+            return redirect($uriCanonical);
+        }
+
+        //<--------- * Visits * ---------->
+        $user_IP = request()->ip();
+        $date = time();
+
+        if (auth()->check()) {
+            // SELECT IF YOU REGISTERED AND VISITED THE PUBLICATION
+            $visitCheckUser = $response->visits()->where('user_id', auth()->id())->first();
+
+            if (!$visitCheckUser && auth()->id() != $response->user()->id) {
+                $visit = new Visits;
+                $visit->images_id = $response->id;
+                $visit->user_id = auth()->id();
+                $visit->ip = $user_IP;
+                $visit->save();
+            }
+
+        } else {
+
+            // IF YOU SELECT "UNREGISTERED" ALREADY VISITED THE PUBLICATION
+            $visitCheckGuest = $response->visits()->where('user_id', 0)
+                ->where('ip', $user_IP)
+                ->orderBy('date', 'desc')
+                ->first();
+
+            if ($visitCheckGuest) {
+                $dateGuest = strtotime($visitCheckGuest->date) + (7200); // 2 Hours
+            }
+
+            if (empty($visitCheckGuest->ip)) {
+                $visit = new Visits();
+                $visit->images_id = $response->id;
+                $visit->user_id = 0;
+                $visit->ip = $user_IP;
+                $visit->save();
+            } else if ($dateGuest < $date) {
+                $visit = new Visits();
+                $visit->images_id = $response->id;
+                $visit->user_id = 0;
+                $visit->ip = $user_IP;
+                $visit->save();
+            }
+
+        }//<--------- * Visits * ---------->
+
+        if (auth()->check()) {
+
+            // FOLLOW ACTIVE
+            $followActive = Followers::where('follower', auth()->id())
+                ->where('following', $response->user()->id)
+                ->where('status', '1')
+                ->first();
+
+            if ($followActive) {
+                $textFollow = trans('users.following');
+                $icoFollow = '-person-check';
+                $activeFollow = 'btnFollowActive';
+            } else {
+                $textFollow = trans('users.follow');
+                $icoFollow = '-person-plus';
+                $activeFollow = '';
+            }
+
+            // LIKE ACTIVE
+            $likeActive = Like::where('user_id', auth()->id())
+                ->where('images_id', $response->id)
+                ->where('status', '1')
+                ->first();
+
+            if ($likeActive) {
+                $textLike = trans('misc.unlike');
+                $icoLike = 'bi bi-heart-fill';
+                $statusLike = 'active';
+            } else {
+                $textLike = trans('misc.like');
+                $icoLike = 'bi bi-heart';
+                $statusLike = '';
+            }
+
+            // ADD TO COLLECTION
+            $collections = Collections::where('user_id', auth()->id())->orderBy('id', 'asc')->get();
+
+        }//<<<<---- *** END AUTH ***
+
+        // All Images resolutions
+        $stockImages = $response->stock;
+
+        $previewWidth = config('video.preview_width');
+        $previewHeight = $previewWidth / $response->dim;
+
+        // Similar Photos
+        $arrayTags = explode(",", $response->tags);
+        $countTags = count($arrayTags);
+
+        $images = Images::where('categories_id', $response->categories_id)
+            ->whereStatus('active')
+            ->where(function ($query) use ($arrayTags, $countTags) {
+                for ($k = 0; $k < $countTags; ++$k) {
+                    $query->orWhere('tags', 'LIKE', '%' . $arrayTags[$k] . '%');
+                }
+            })
+            ->where('id', '<>', $response->id)
+            ->orderByRaw('RAND()')
+            ->take(10)
+            ->get();
+
+        // Comments
+        $comments_sql = $response->comments()->where('status', '1')->orderBy('date', 'desc')->paginate(10);
+
+        // Payments gateways enabled
+        $paymentsGatewaysEnabled = PaymentGateways::where('enabled', '1')->count();
+
+        // Item price
+        $itemPrice = $this->settings->default_price_photos ?: $response->price;
+
+
+        return view('videos.show')->with([
+            'response'                => $response,
+            'textFollow'              => $textFollow ?? null,
+            'icoFollow'               => $icoFollow ?? null,
+            'activeFollow'            => $activeFollow ?? null,
+            'textLike'                => $textLike ?? null,
+            'icoLike'                 => $icoLike ?? null,
+            'statusLike'              => $statusLike ?? null,
+            'collections'             => $collections ?? null,
+            'stockImages'             => $stockImages,
+            'previewWidth'            => $previewWidth,
+            'previewHeight'           => $previewHeight,
+            'images'                  => $images,
+            'comments_sql'            => $comments_sql,
+            'paymentsGatewaysEnabled' => $paymentsGatewaysEnabled,
+            'itemPrice'               => $itemPrice,
+        ]);
+
+    }//<--- End Method
+
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -359,6 +525,90 @@ class ImagesController extends Controller
 
     }//<--- End Method
 
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param int $id
+     * @return Response
+     */
+    public function editVideo($id)
+    {
+        $data = Images::findOrFail($id);
+
+        if ($data->user_id != auth()->id()) {
+            abort('404');
+        }
+
+        return view('videos.edit')->withData($data);
+
+    }//<--- End Method
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param int $id
+     * @return Response
+     */
+    public function updateVideo(Request $request)
+    {
+        $image = Images::findOrFail($request->id);
+
+        if ($image->user_id != auth()->id()) {
+            return redirect('/');
+        }
+
+        $input = $request->all();
+
+        $input['tags'] = Helper::cleanStr($input['tags']);
+
+        if (strlen($input['tags']) == 1) {
+            return redirect()->back()
+                ->withErrors(trans('validation.required', ['attribute' => trans('misc.tags')]));
+        }
+
+        $tagsLength = explode(',', $input['tags']);
+
+        // Validate length tags
+        foreach ($tagsLength as $tag) {
+            if (strlen($tag) < 2) {
+                return redirect()->back()
+                    ->withErrors(trans('misc.error_length_tags'));
+            }
+        }
+
+        // Validate number of tags
+        if (count($tagsLength) > $this->settings->tags_limit && !$image->data_iptc) {
+            return redirect()->back()
+                ->withErrors(trans('misc.maximum_tags', ['limit' => $this->settings->tags_limit]));
+        }
+
+        if ($image->item_for_sale == 'sale' || $request->item_for_sale == 'sale') {
+            $input['item_for_sale'] = 'sale';
+        } else {
+            $input['item_for_sale'] = 'free';
+        }
+
+        $input['attribution_required'] = $request->attribution_required ?? 'no';
+
+        $validator = $this->validatorUpdate($input);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        if ($this->settings->default_price_photos) {
+            $input['price'] = $image->price;
+        }
+
+        $image->fill($input)->save();
+
+        \Session::flash('success_message', trans('admin.success_update'));
+
+        return redirect('edit/video/' . $image->id);
+
+    }//<--- End Method
 
     /**
      * Remove the specified resource from storage.
@@ -430,6 +680,72 @@ class ImagesController extends Controller
         return redirect(auth()->user()->username);
 
     }//<--- End Method
+
+    public function destroyVideo(Request $request)
+    {
+        $image = Images::findOrFail($request->id);
+
+        if ($image->user_id != auth()->id()) {
+            return redirect('/');
+        }
+
+        // Delete Notification
+        $notifications = Notifications::where('destination', $request->id)
+            ->where('type', '2')
+            ->orWhere('destination', $request->id)
+            ->where('type', '3')
+            ->orWhere('destination', $request->id)
+            ->where('type', '4')
+            ->get();
+
+        if (isset($notifications)) {
+            foreach ($notifications as $notification) {
+                $notification->delete();
+            }
+        }
+
+        // Collections Images
+        $collectionsImages = CollectionsImages::where('images_id', '=', $request->id)->get();
+        if (isset($collectionsImages)) {
+            foreach ($collectionsImages as $collectionsImage) {
+                $collectionsImage->delete();
+            }
+        }
+
+        // Images Reported
+        $imagesReporteds = ImagesReported::where('image_id', '=', $request->id)->get();
+        if (isset($imagesReporteds)) {
+            foreach ($imagesReporteds as $imagesReported) {
+                $imagesReported->delete();
+            }
+        }
+
+        //<---- ALL RESOLUTIONS IMAGES
+        $stocks = Stock::where('images_id', '=', $request->id)->get();
+
+        foreach ($stocks as $stock) {
+            // Delete Stock
+            Storage::delete(config('path.uploads') . $stock->type . '/' . $stock->name);
+
+            $stock->delete();
+
+        }//<--- End foreach
+
+        // Delete preview
+        Storage::delete(config('path.video_preview') . $image->preview);
+
+        // Delete thumbnail
+        Storage::delete(config('path.video_thumbnail') . $image->thumbnail);
+
+        // Delete overview
+        Storage::delete(config('path.video_overview') . $image->preview);
+
+        $image->delete();
+
+        return redirect(auth()->user()->username);
+
+    }//<--- End Method
+
 
     public function download($token_id)
     {
@@ -764,15 +1080,19 @@ class ImagesController extends Controller
     public function image($size, $path)
     {
         try {
+            $s_path = config('path.medium');
+            if (request()->get('type') && request()->get('type') == 'videoThumbnail') {
+                $s_path = config('path.video_thumbnail');
+            }
 
             $server = ServerFactory::create([
                 'response'           => new LaravelResponseFactory(app('request')),
                 'source'             => Storage::disk()->getDriver(),
                 'watermarks'         => public_path('img'),
                 'cache'              => Storage::disk()->getDriver(),
-                'source_path_prefix' => '/uploads/medium/',
+                'source_path_prefix' => $s_path,
                 'cache_path_prefix'  => '.cache',
-                'base_url'           => '/uploads/medium/',
+                'base_url'           => $s_path,
             ]);
 
             if (request()->get('size') && request()->get('size') == 'small') {
@@ -791,7 +1111,6 @@ class ImagesController extends Controller
 
             $width = $resolution[0];
             $height = $resolution[1];
-
             $server->outputImage($path, [
                     'w'       => $width,
                     'h'       => $height,
@@ -810,6 +1129,24 @@ class ImagesController extends Controller
             $server->deleteCache($path);
         }
     }
+
+    public function video($size, $path)
+    {
+        if ($size == "overview") {
+            $file = config('path.video_overview');
+        } else {
+            $file = config('path.video_preview');
+        }
+        try {
+            return Storage::download($file . $path);
+
+        } catch (\Exception $e) {
+
+            abort(404);
+            $server->deleteCache($path);
+        }
+    }
+
 
     public function preview($path)
     {
@@ -930,6 +1267,7 @@ class ImagesController extends Controller
 
     public function createVideo()
     {
+        set_time_limit(0);
         if (auth()->guest()) {
             return response()->json([
                 'session_null' => true,

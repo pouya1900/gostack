@@ -32,7 +32,7 @@
         "league/glide-laravel": "^1.0",
         "mercadopago/dx-php": "2.4.5",
         "mollie/laravel-mollie": "^2.15",
-        "pbmedia/laravel-ffmpeg": "^7.5",
+        "pbmedia/laravel-ffmpeg": "7.8.1",
         "php-ffmpeg/php-ffmpeg": "^1.0",
         "razorpay/razorpay": "^2.8",
         "silviolleite/laravelpwa": "^2.0",

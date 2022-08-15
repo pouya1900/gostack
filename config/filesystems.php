@@ -92,6 +92,7 @@ return [
             'host'     => '85.10.205.248',
             'username' => 'myfoota1',
             'password' => 't01[y2K]UYm3jY',
+            'url'      => 'http://newqiqoo.ir/',
 
             // Optional FTP Settings...
             // 'port'     => 21,

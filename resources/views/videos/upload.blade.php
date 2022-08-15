@@ -41,9 +41,9 @@
                                             <i class="bi bi-image"></i>
                                         </div>
                                         <div class="filer-input-text">
-                                            <h3 class="mb-2 fw-light">{{ trans('misc.click_select_image') }}</h3>
-                                            <h3 class="fw-light">{{ trans('misc.max_size') }}
-                                                : {{  $settings->min_width_height_image.' - '.Helper::formatBytes($settings->file_size_allowed * 1024)}} </h3>
+                                            <h3 class="mb-2 fw-light">{{ trans('misc.click_select_video') }}</h3>
+                                            <h3 class="fw-light">{{ trans('misc.max_size_video') }}
+                                                : {{  $settings->min_width_height_video.' - '.Helper::formatBytes($settings->video_file_size_allowed * 1024)}} </h3>
                                         </div>
                                     </div>
                                 </div><!-- ./ wrapper upload -->

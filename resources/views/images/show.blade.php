@@ -834,9 +834,6 @@
                           @if ($payment->name == 'PayPal')
                             {{ trans('misc.paypal_info') }}
                           @endif
-                              @if ($payment->name == 'Shetab')
-                                  {{ trans('misc.shetab_info') }}
-                              @endif
                         </small>
                       </label>
                     </div>

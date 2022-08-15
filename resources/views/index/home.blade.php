@@ -7,13 +7,13 @@
 
           @if ($settings->announcement != '')
             <div class="alert alert-{{$settings->type_announcement}} announcements display-none alert-dismissible fade show" role="alert">
-              
+
               <h4 class="alert-heading"><i class="bi-megaphone me-2"></i> {{ trans('admin.announcements') }}</h4>
 
               <p class="update-text">
                 {!! $settings->announcement !!}
               </p>
-  
+
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" id="closeAnnouncements">
                   <i class="bi bi-x-lg"></i>
                 </button>
@@ -76,7 +76,7 @@
     </a>
   </div>
   @endif
-    
+
 	@else
 	<h4 class="text-center">
       <div class="d-block w-100 display-2">

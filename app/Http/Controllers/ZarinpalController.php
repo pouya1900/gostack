@@ -64,7 +64,7 @@ class ZarinpalController extends Controller
                 'pp_' . str_random(25),
                 $image,
                 auth()->id(),
-                Helper::amountGross($itemPrice) * $config["dollar"],
+                Helper::amountGross($itemPrice),
                 $earnings['user'],
                 $earnings['admin'],
                 $this->request->type,
@@ -80,7 +80,7 @@ class ZarinpalController extends Controller
 
             $urlSuccess = route('shetab.buy.success', ['id' => $purchase->id]);
 
-            $order = $this->payRequest(Helper::amountGross($itemPrice) * $config["dollar"], $urlSuccess);
+            $order = $this->payRequest(Helper::amountGross($itemPrice), $urlSuccess);
 
             // Update Order Id
             Purchases::whereId($purchase->id)->update(['txn_id' => $order['id']]);
