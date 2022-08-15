@@ -28,7 +28,7 @@
              <div class="row mb-3">
  		          <label class="col-sm-2 col-form-label text-lg-end">{{ trans('misc.avatar') }}</label>
  		          <div class="col-sm-10">
- 		            <img src="{{Storage::url(config('path.avatar').$data->avatar)}}" width="80" height="80" class="rounded-circle" />
+ 		            <img src="{{Storage::disk('default')->url(config('path.avatar').$data->avatar)}}" width="80" height="80" class="rounded-circle" />
  		          </div>
  		        </div>
 

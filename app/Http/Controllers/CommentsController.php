@@ -158,7 +158,7 @@ class CommentsController extends Controller {
 
 				foreach ($data as $key) {
 					$_array[] = '<li><a href="'.url($key->user()->username).'" class="showTooltip" data-toggle="tooltip" data-placement="left" title="'.$key->user()->username.'">
-					<img src="'.Storage::url(config('path.avatar').$key->user()->avatar).'" class="img-circle" width="25">
+					<img src="'.Storage::disk('default')->url(config('path.avatar').$key->user()->avatar).'" class="img-circle" width="25">
 					</a></li>';
 				}
 				return $_array;

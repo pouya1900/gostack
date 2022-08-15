@@ -35,7 +35,7 @@
 
                     @php
 
-                    $image_photo = Storage::url(config('path.thumbnail').$downloads->thumbnail);
+                    $image_photo = url('files/preview/'.$downloads->stock->first()->resolution, $downloads->thumbnail).'?type=thumbnail';
                     $image_title = $downloads->title;
                     $image_url   = url('photo', $downloads->id);
 

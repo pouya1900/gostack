@@ -119,7 +119,7 @@
 		          <label class="col-sm-2 col-form-label text-lg-end">Avatar default</label>
 		          <div class="col-lg-5 col-sm-10">
                 <div class="d-block mb-2">
-                  <img src="{{Storage::url(config('path.avatar').$settings->avatar)}}" style="width:180px">
+                  <img src="{{Storage::disk('default')->url(config('path.avatar').$settings->avatar)}}" style="width:180px">
                 </div>
 
                 <div class="input-group mb-1">
@@ -133,7 +133,7 @@
 		          <label class="col-sm-2 col-form-label text-lg-end">Cover User</label>
 		          <div class="col-lg-5 col-sm-10">
                 <div class="d-block mb-2">
-                  <img src="{{Storage::url(config('path.cover').$settings->cover)}}" style="width:200px">
+                  <img src="{{Storage::disk('default')->url(config('path.cover').$settings->cover)}}" style="width:200px">
                 </div>
 
                 <div class="input-group mb-1">

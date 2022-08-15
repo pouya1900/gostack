@@ -98,7 +98,7 @@
 						@if ($notyNormal)
 						<span class="rounded-circle me-3">
         			<a href="{{url($key->username)}}">
-        				<img src="{{Storage::url(config('path.avatar').$key->avatar)}}" class="rounded-circle" width="60" height="60">
+        				<img src="{{Storage::disk('default')->url(config('path.avatar').$key->avatar)}}" class="rounded-circle" width="60" height="60">
         				</a>
         		</span>
 

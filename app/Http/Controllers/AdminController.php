@@ -788,7 +788,7 @@ class AdminController extends Controller {
 		})->encode($extension);
 
 		// Copy folder
-		Storage::put($pathAvatar.$file, $imgAvatar, 'public');
+		Storage::disk('default')->put($pathAvatar.$file, $imgAvatar, 'public');
 
 		// Update Avatar all users
 		User::where('avatar', $this->settings->avatar)->update([
@@ -796,7 +796,7 @@ class AdminController extends Controller {
 				]);
 
 		// Delete old Avatar
-		Storage::delete(config('path.avatar').$this->settings->avatar);
+		Storage::disk('default')->delete(config('path.avatar').$this->settings->avatar);
 
 			$this->settings->avatar = $file;
 			$this->settings->save();
@@ -817,7 +817,7 @@ class AdminController extends Controller {
 				]);
 
 		// Delete old Avatar
-		Storage::delete(config('path.cover').$this->settings->cover);
+		Storage::disk('default')->delete(config('path.cover').$this->settings->cover);
 
 			$this->settings->cover = $file;
 			$this->settings->save();
@@ -1204,7 +1204,7 @@ class AdminController extends Controller {
 
 	}//<--- END METHOD
 
-	public function deleteCollection(Request $request) 
+	public function deleteCollection(Request $request)
 	{
 		$collection = Collections::findOrFail($request->id);
 

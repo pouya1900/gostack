@@ -21,10 +21,10 @@ if (auth()->check()) {
  @endphp
 <div class="col-md-4 mb-4">
 <div class="card card-updates h-100 card-user-profile shadow-sm">
-	<div class="card-cover" style="background: @if ($user->cover != '') url({{ Storage::url(config('path.cover').$user->cover) }})  @endif #505050 center center; background-size: cover;"></div>
+	<div class="card-cover" style="background: @if ($user->cover != '') url({{ Storage::disk('default')->url(config('path.cover').$user->cover) }})  @endif #505050 center center; background-size: cover;"></div>
 	<div class="card-avatar">
 		<a href="{{url($user->username)}}">
-		<img src="{{Storage::url(config('path.avatar').$user->avatar)}}" width="95" height="95" alt="{{$user->name}}" class="img-user-small">
+		<img src="{{Storage::disk('default')->url(config('path.avatar').$user->avatar)}}" width="95" height="95" alt="{{$user->name}}" class="img-user-small">
 		</a>
 	</div>
 	<div class="card-body text-center">
@@ -41,15 +41,15 @@ if (auth()->check()) {
 				<div class="row">
 
 					<div class="col-4 px-1">
-						<img src="{{ isset($images[0]) ? Storage::url(config('path.thumbnail').$images[0]->thumbnail) : asset('public/img/placeholder.jpg') }}" width="95" class="image-card-user me-1">
+						<img src="{{ isset($images[0]) ? url('files/preview/'.$images[0]->stock->first()->resolution, $images[0]->thumbnail).'?type=thumbnail' : asset('public/img/placeholder.jpg') }}" width="95" class="image-card-user me-1">
 					</div>
 
 					<div class="col-4 px-1">
-						<img src="{{ isset($images[1]) ? Storage::url(config('path.thumbnail').$images[1]->thumbnail) : asset('public/img/placeholder.jpg') }}" width="95" class="image-card-user me-1">
+						<img src="{{ isset($images[1]) ? url('files/preview/'.$images[1]->stock->first()->resolution, $images[1]->thumbnail).'?type=thumbnail' : asset('public/img/placeholder.jpg') }}" width="95" class="image-card-user me-1">
 					</div>
 
 					<div class="col-4 px-1">
-						<img src="{{ isset($images[2]) ? Storage::url(config('path.thumbnail').$images[2]->thumbnail) : asset('public/img/placeholder.jpg') }}" width="95" class="image-card-user me-1 me-1">
+						<img src="{{ isset($images[2]) ? url('files/preview/'.$images[2]->stock->first()->resolution, $images[2]->thumbnail).'?type=thumbnail' : asset('public/img/placeholder.jpg') }}" width="95" class="image-card-user me-1 me-1">
 					</div>
 
 				</div>

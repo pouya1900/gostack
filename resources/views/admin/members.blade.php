@@ -69,14 +69,14 @@
                      <td>{{ $user->id }}</td>
                      <td>
                        <a href="{{ url($user->username) }}" target="_blank">
-                         <img src="{{Storage::url(config('path.avatar').$user->avatar)}}" width="40" height="40" class="rounded-circle me-1" /> {{ $user->username }}
+                         <img src="{{Storage::disk('default')->url(config('path.avatar').$user->avatar)}}" width="40" height="40" class="rounded-circle me-1" /> {{ $user->username }}
                        </a>
                      </td>
                      <td>{{ $user->images()->count() }}</td>
                      <td>{{ Helper::amountFormatDecimal($user->balance)}}</td>
                      <td>{{ Helper::amountFormatDecimal($user->funds)}}</td>
                      <td>{{ Helper::formatDate($user->date) }}</td>
-                     <td>{{ $user->ip ? $user->ip : trans('misc.not_available') }}</td>                     
+                     <td>{{ $user->ip ? $user->ip : trans('misc.not_available') }}</td>
                      <td>
                       @foreach (RolesAndPermissions::all() as $role)
 
@@ -85,7 +85,7 @@
                       @endif
 
                      @endforeach
-                     
+
                      @if ($user->role == '0')
                      <span class="badge bg-secondary">{{ trans('admin.normal') }}</span>
                      @endif

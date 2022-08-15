@@ -60,7 +60,7 @@ class SocialAccountService
           $fileContents = file_get_contents($avatarUser);
 
           // Storage avatar user
-          \Storage::put($path.$nameAvatar.'.jpg', $fileContents, 'public');
+          \Storage::disk('default')->put($path.$nameAvatar.'.jpg', $fileContents, 'public');
 
           $avatar = $nameAvatar.'.jpg';
 

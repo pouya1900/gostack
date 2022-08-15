@@ -35,7 +35,7 @@
                      <td>{{ $subscription->id }}</td>
                      <td>
                        <a href="{{ url($subscription->user()->username) }}" target="_blank">
-                         <img src="{{Storage::url(config('path.avatar').$subscription->user()->avatar)}}" width="40" height="40" class="rounded-circle me-1" /> {{ $subscription->user()->username }}
+                         <img src="{{Storage::disk('default')->url(config('path.avatar').$subscription->user()->avatar)}}" width="40" height="40" class="rounded-circle me-1" /> {{ $subscription->user()->username }}
                        </a>
                      </td>
 

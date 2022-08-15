@@ -39,7 +39,7 @@
 
                     if (null !== $purchase->images()) {
 
-                      $image_photo = Storage::url(config('path.thumbnail').$purchase->images()->thumbnail);
+                      $image_photo = url('files/preview/'.$purchase->images()->stock->first()->resolution, $purchase->images()->thumbnail).'?type=thumbnail';
                       $image_title = $purchase->images()->title;
                       $image_url   = url('photo', $purchase->images()->id);
 

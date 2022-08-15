@@ -1084,6 +1084,9 @@ class ImagesController extends Controller
             if (request()->get('type') && request()->get('type') == 'videoThumbnail') {
                 $s_path = config('path.video_thumbnail');
             }
+            if (request()->get('type') && request()->get('type') == 'thumbnail') {
+                $s_path = config('path.thumbnail');
+            }
 
             $server = ServerFactory::create([
                 'response'           => new LaravelResponseFactory(app('request')),
@@ -1105,6 +1108,11 @@ class ImagesController extends Controller
                 $medium = true;
             } else {
                 $medium = false;
+            }
+
+            if (request()->get('type') && request()->get('type') == 'thumbnail') {
+                $medium = false;
+                $thumbnail = true;
             }
 
             $resolution = explode('x', Helper::resolutionPreview($size, $thumbnail, $medium));

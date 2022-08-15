@@ -125,7 +125,7 @@
 					 @foreach (User::orderBy('id','DESC')->take(5)->get() as $user)
 						 <div class="d-flex mb-3">
 							  <div class="flex-shrink-0">
-							    <img src="{{ Storage::url(config('path.avatar').$user->avatar) }}" width="50" class="rounded-circle" />
+							    <img src="{{ Storage::disk('default')->url(config('path.avatar').$user->avatar) }}" width="50" class="rounded-circle" />
 							  </div>
 							  <div class="flex-grow-1 ms-3">
 							    <h6 class="m-0 fw-light text-break">
@@ -167,7 +167,7 @@
 					 @foreach (Images::orderBy('id','DESC')->take(5)->get() as $image)
 						 <div class="d-flex mb-3">
 							  <div class="flex-shrink-0">
-							    <img src="{{ Storage::url(config('path.thumbnail').$image->thumbnail) }}" width="50" class="rounded" />
+							    <img src="{{ url('files/preview/'.$image->stock->first()->resolution, $image->thumbnail).'?type=thumbnail' }}" width="50" class="rounded" />
 							  </div>
 							  <div class="flex-grow-1 ms-3">
 							    <h6 class="m-0 fw-light text-break">

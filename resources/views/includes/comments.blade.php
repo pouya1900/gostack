@@ -3,7 +3,7 @@
 	 <div class="media media-comments position-relative" id="comment{{$comment->id}}">
 			<span class="float-start me-3">
 				<a href="{{url($comment->user()->username)}}">
-				<img width="50" height="50" class="media-object rounded-circle" src="{{Storage::url(config('path.avatar').$comment->user()->avatar)}}">
+				<img width="50" height="50" class="media-object rounded-circle" src="{{Storage::disk('default')->url(config('path.avatar').$comment->user()->avatar)}}">
 			</a>
 			</span>
 			<div class="media-body media-body-comments  border-bottom pb-2">

@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- *********** COVER ************* -->
-<div class="container-fluid cover-user" style="{{$user->cover ? "background: url('".Storage::url(config('path.cover').$user->cover)."') no-repeat center center #232a29; background-size: cover;" : 'background: #232a29;'}}">
+<div class="container-fluid cover-user" style="{{$user->cover ? "background: url('".Storage::disk('default')->url(config('path.cover').$user->cover)."') no-repeat center center #232a29; background-size: cover;" : 'background: #232a29;'}}">
 
 	@if (auth()->check() && auth()->id() == $user->id)
     <form style="z-index: 100;" action="{{url('upload/cover')}}" method="POST" id="formCover" accept-charset="UTF-8" enctype="multipart/form-data">
@@ -43,7 +43,7 @@
 									</form><!-- *********** AVATAR ************* -->
 									@endif
 
-						<img class="mb-3 shadow rounded-circle avatar-profile avatarUser profile-user-over" src="{{ Storage::url(config('path.avatar').$user->avatar) }}" width="150" height="150" />
+						<img class="mb-3 shadow rounded-circle avatar-profile avatarUser profile-user-over" src="{{ Storage::disk('default')->url(config('path.avatar').$user->avatar) }}" width="150" height="150" />
 					</div>
 
 				</div>

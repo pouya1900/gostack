@@ -40,7 +40,7 @@
                     <div class="d-flex">
                         <div class="flex-shrink-0">
                             <img class="img-fluid rounded img-thanks-share" width="100"
-                                 src="{{ Storage::url(config('path.thumbnail').$response->thumbnail) }}"/>
+                                 src="{{ url('files/preview/'.$response->stock->first()->resolution, $response->thumbnail).'?type=thumbnail' }}"/>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h5>{{ __('misc.give_thanks') }} <i class="bi-stars text-warning"></i></h5>
@@ -269,7 +269,7 @@
                         @if (auth()->check() && $response->status == 'active' && $settings->comments)
                             <div class="media mb-5">
             <span class="float-start me-2">
-                <img alt="Image" src="{{ Storage::url(config('path.avatar').auth()->user()->avatar) }}"
+                <img alt="Image" src="{{ Storage::disk('default')->url(config('path.avatar').auth()->user()->avatar) }}"
                      class="media-object rounded-circle" width="50">
             </span>
 
@@ -335,7 +335,7 @@
                                 <div class="float-start me-2">
                                     <a href="{{url($response->user()->username)}}">
                                         <img class="media-object rounded-circle"
-                                             src="{{Storage::url(config('path.avatar').$response->user()->avatar)}}"
+                                             src="{{Storage::disk('default')->url(config('path.avatar').$response->user()->avatar)}}"
                                              width="60" height="60">
                                     </a>
                                 </div>
@@ -1010,7 +1010,7 @@
 
                                                     <div class="col-auto">
                                                         <img class="rounded"
-                                                             src="{{ Storage::url(config('path.thumbnail').$response->thumbnail) }}"
+                                                             src="{{ url('files/preview/'.$response->stock->first()->resolution, $response->thumbnail).'?type=videoThumbnail' }}"
                                                              style="max-height: 40px;"/>
                                                     </div>
 

@@ -36,7 +36,7 @@
 
 			<div class="sub-hover d-flex align-items-center">
 				<div class="flex-shrink-0">
-				  <img src="{{ Storage::url(config('path.avatar').$image->user()->avatar) }}"
+				  <img src="{{ Storage::disk('default')->url(config('path.avatar').$image->user()->avatar) }}"
                        class="rounded-circle avatarUser" style="width: 32px; height: 32px;">
 				</div>
 				<div class="flex-grow-1 ms-3 text-truncate">
@@ -87,7 +87,7 @@
 
 			<div class="sub-hover d-flex align-items-center">
 				<div class="flex-shrink-0">
-				  <img src="{{ Storage::url(config('path.avatar').$image->user()->avatar) }}"
+				  <img src="{{ Storage::disk('default')->url(config('path.avatar').$image->user()->avatar) }}"
                        class="rounded-circle avatarUser" style="width: 32px; height: 32px;">
 				</div>
 				<div class="flex-grow-1 ms-3 text-truncate">

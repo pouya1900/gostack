@@ -14,7 +14,7 @@
     </h1>
     <p class="lead text-muted mt-1">
         <a href="{{url($user->username, 'collections')}}" class="text-dark">
-          <img src="{{ Storage::url(config('path.avatar').$user->avatar) }}" width="32" height="32" class="rounded-circle me-1">
+          <img src="{{ Storage::disk('default')->url(config('path.avatar').$user->avatar) }}" width="32" height="32" class="rounded-circle me-1">
 
           {{$user->username}}
         </a>

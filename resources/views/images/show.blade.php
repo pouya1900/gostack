@@ -37,7 +37,7 @@
 
         <div class="d-flex">
           <div class="flex-shrink-0">
-            <img class="img-fluid rounded img-thanks-share" width="100" src="{{ Storage::url(config('path.thumbnail').$response->thumbnail) }}" />
+            <img class="img-fluid rounded img-thanks-share" width="100" src="{{ url('files/preview/'.$response->stock->first()->resolution, $response->thumbnail).'?type=thumbnail' }}" />
           </div>
           <div class="flex-grow-1 ms-3">
             <h5>{{ __('misc.give_thanks') }} <i class="bi-stars text-warning"></i></h5>
@@ -163,11 +163,11 @@
 
     @if ($settings->lightbox == 'on')
       <a href="{{ url('files/preview/'.$stockImages[1]->resolution, $stockImages[1]->name) }}" class="glightbox" style="cursor: zoom-in;">
-      <img class="img-fluid lazyload" style="display: inline-block; width: {{$previewWidth}}px" src="{{ Storage::url(config('path.thumbnail').$response->thumbnail) }}" data-src="{{ url('files/preview/'.$stockImages[1]->resolution, $stockImages[1]->name) }}" />
+      <img class="img-fluid lazyload" style="display: inline-block; width: {{$previewWidth}}px" src="{{ url('files/preview/'.$response->stock->first()->resolution, $response->thumbnail).'?type=thumbnail' }}" data-src="{{ url('files/preview/'.$stockImages[1]->resolution, $stockImages[1]->name) }}" />
       </a>
 
     @else
-      <img class="img-fluid lazyload" style="display: inline-block; width: {{$previewWidth}}px" src="{{ Storage::url(config('path.thumbnail').$response->thumbnail) }}" data-src="{{ url('files/preview/'.$stockImages[1]->resolution, $stockImages[1]->name) }}" />
+      <img class="img-fluid lazyload" style="display: inline-block; width: {{$previewWidth}}px" src="{{ url('files/preview/'.$response->stock->first()->resolution, $response->thumbnail).'?type=thumbnail' }}" data-src="{{ url('files/preview/'.$stockImages[1]->resolution, $stockImages[1]->name) }}" />
       @endif
 
     </div>
@@ -226,7 +226,7 @@
 @if (auth()->check() && $response->status == 'active' && $settings->comments)
 	<div class="media mb-5">
             <span class="float-start me-2">
-                <img alt="Image" src="{{ Storage::url(config('path.avatar').auth()->user()->avatar) }}" class="media-object rounded-circle" width="50">
+                <img alt="Image" src="{{ Storage::disk('default')->url(config('path.avatar').auth()->user()->avatar) }}" class="media-object rounded-circle" width="50">
             </span>
 
             <div class="media-body">
@@ -283,7 +283,7 @@
 	    <div class="media none-overflow">
 			  <div class="float-start me-2">
 			    <a href="{{url($response->user()->username)}}">
-			      <img class="media-object rounded-circle" src="{{Storage::url(config('path.avatar').$response->user()->avatar)}}" width="60" height="60" >
+			      <img class="media-object rounded-circle" src="{{Storage::disk('default')->url(config('path.avatar').$response->user()->avatar)}}" width="60" height="60" >
 			    </a>
 			  </div>
 			  <div class="media-body">
@@ -865,7 +865,7 @@
                   </div>
 
                   <div class="col-auto">
-                    <img class="rounded" src="{{ Storage::url(config('path.thumbnail').$response->thumbnail) }}" style="max-height: 40px;" />
+                    <img class="rounded" src="{{ url('files/preview/'.$response->stock->first()->resolution, $response->thumbnail).'?type=thumbnail' }}" style="max-height: 40px;" />
                   </div>
 
                 </div>

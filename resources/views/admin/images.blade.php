@@ -78,7 +78,7 @@
             @foreach ($data as $image)
               <tr>
                 <td>{{ $image->id }}</td>
-                <td><img src="{{Storage::url(config('path.thumbnail').$image->thumbnail)}}" class="rounded" width="50" /></td>
+                <td><img src="{{url('files/preview/'.$image->stock->first()->resolution, $image->thumbnail).'?type=thumbnail'}}" class="rounded" width="50" /></td>
                 <td><a href="{{ url('photo', $image->id) }}" title="{{$image->title}}" target="_blank">{{ str_limit($image->title, 10, '...') }} <i class="fa fa-external-link-square"></i></a></td>
                 <td>{{ $image->user()->username }}</td>
                 <td>{{ $image->item_for_sale == 'sale' ? trans('misc.sale') : trans('misc.free')  }}</td>

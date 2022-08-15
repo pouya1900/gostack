@@ -425,11 +425,11 @@ class UserController extends Controller {
 				})->encode($extension);
 
 				// Copy folder
-				Storage::put($path.$avatar, $imgAvatar, 'public');
+				Storage::disk('default')->put($path.$avatar, $imgAvatar, 'public');
 
 				//<<<-- Delete old image -->>>/
 				if (auth()->user()->avatar != $this->settings->avatar) {
-					Storage::delete(config('path.avatar').auth()->user()->avatar);
+					Storage::disk('default')->delete(config('path.avatar').auth()->user()->avatar);
 				}
 
 				// Update Database
@@ -437,7 +437,7 @@ class UserController extends Controller {
 
 				return response()->json([
 				        'success' => true,
-				        'avatar' => Storage::url($path.$avatar),
+				        'avatar' => Storage::disk('default')->url($path.$avatar),
 				    ]);
 	    }//<--- HASFILE PHOTO
     }//<--- End Method Avatar
@@ -493,11 +493,11 @@ class UserController extends Controller {
 				})->encode($extension);
 
 				// Copy folder
-				Storage::put($path.$cover, $imgCover, 'public');
+				Storage::disk('default')->put($path.$cover, $imgCover, 'public');
 
 				//<<<-- Delete old image -->>>/
 				if (auth()->user()->cover != $this->settings->cover) {
-					Storage::delete(config('path.cover').auth()->user()->cover);
+					Storage::disk('default')->delete(config('path.cover').auth()->user()->cover);
 				}//<--- IF FILE EXISTS #1
 
 				// Update Database
@@ -505,7 +505,7 @@ class UserController extends Controller {
 
 				return response()->json([
 				        'success' => true,
-				        'cover' => Storage::url($path.$cover),
+				        'cover' => Storage::disk('default')->url($path.$cover),
 				    ]);
 
 	    }//<--- HASFILE PHOTO
